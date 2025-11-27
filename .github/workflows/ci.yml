@@ -54,19 +54,16 @@ jobs:
         working-directory: ./Backend
         run: |
           npm ci
-          # A '&' jel miatt a háttérben fut tovább
           node server.js &
 
       - name: Start Frontend
         working-directory: ./Frontend
         run: |
           npm ci
-          # A '&' jel miatt a háttérben fut tovább
           npm run dev &
 
       - name: Wait for servers to be ready
         run: |
-          # Telepítjük a wait-on eszközt ideiglenesen
           npx wait-on http://localhost:5000 http://localhost:5173 --timeout 60000
 
       - name: Install Playwright browsers

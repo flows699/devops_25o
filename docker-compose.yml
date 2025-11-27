@@ -1,0 +1,20 @@
+services:
+  backend:
+    image: flowsx/devops-backend:latest
+    container_name: backend
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-network
+
+  web-app:
+    image: flowsx/devops-frontend:latest
+    container_name: frontend
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-network
+    depends_on:
+      - backend
+
+networks:
+  nginx-proxy-network:
+    external: true

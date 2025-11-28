@@ -10,7 +10,7 @@ const CURRENCIES = [
 ];
 
 function App() {
-  const [amount, setAmount] = useState<number>(100);
+  const [amount, setAmount] = useState<number | string>(100);
   const [fromCurrency, setFromCurrency] = useState<string>('EUR');
   const [toCurrency, setToCurrency] = useState<string>('HUF');
   const [result, setResult] = useState<number | null>(null);
@@ -18,7 +18,9 @@ function App() {
   const [error, setError] = useState<string>("");
 
   const fetchConversion = useCallback(async () => {
-    if (amount <= 0) {
+    const numericAmount = Number(amount);
+
+    if (numericAmount <= 0) {
         setResult(0);
         return;
     }
@@ -27,7 +29,7 @@ function App() {
     setError("");
 
     try {
-      const response = await fetch(`/api/convert?amount=${amount}&from=${fromCurrency}&to=${toCurrency}`);
+      const response = await fetch(`/api/convert?amount=${numericAmount}&from=${fromCurrency}&to=${toCurrency}`);
       
       if (!response.ok) throw new Error('Hálózati hiba');
       
@@ -43,12 +45,16 @@ function App() {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchConversion();
+      if (amount !== "" && Number(amount) > 0) {
+        fetchConversion();
+      } else {
+        setResult(null);
+      }
     }, 500);
 
     return () => clearTimeout(timeoutId);
     
-  }, [fetchConversion]); 
+  }, [fetchConversion, amount]); 
 
 
   const swapCurrencies = () => {
@@ -70,14 +76,17 @@ function App() {
               type="number" 
               value={amount}
               min="0"
-              onChange={(e) => setAmount(Number(e.target.value))}
-              className="grow p-4 text-xl font-bold text-gray-700 bg-transparent outline-none"
+              onChange={(e) => {
+                const val = e.target.value;
+                setAmount(val === "" ? "" : Number(val));
+              }}
+              className="grow min-w-0 p-4 text-xl font-bold text-gray-700 bg-transparent outline-none"
               data-testid="amount-input"
             />
             <select 
               value={fromCurrency}
               onChange={(e) => setFromCurrency(e.target.value)}
-              className="bg-transparent border-l-2 border-gray-200 p-2 font-bold text-brand-dark outline-none cursor-pointer hover:bg-gray-200 transition"
+              className="shrink-0 bg-transparent border-l-2 border-gray-200 p-2 font-bold text-brand-dark outline-none cursor-pointer hover:bg-gray-200 transition"
               data-testid="from-select"
             >
               {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
@@ -99,13 +108,13 @@ function App() {
         <div className="mb-4 mt-4">
           <label className="block text-xs font-bold text-brand-dark uppercase tracking-wide mb-1 ml-1">Átváltva</label>
           <div className="flex border-2 border-gray-100 rounded-xl overflow-hidden bg-white focus-within:ring-2 ring-brand-medium transition">
-            <div className={`grow p-4 text-xl bg-gray-50 text-gray-500 flex items-center ${result ? 'font-bold text-brand-dark' : ''}`} data-testid="result-value">
+            <div className={`grow min-w-0 p-4 text-xl bg-gray-50 text-gray-500 flex items-center ${result ? 'font-bold text-brand-dark' : ''}`} data-testid="result-value">
                 {loading ? <span className="text-gray-400 text-sm">Számolás...</span> : (result ?? "...")}
             </div>
             <select 
               value={toCurrency}
               onChange={(e) => setToCurrency(e.target.value)}
-              className="bg-gray-50 border-l-2 border-gray-200 p-2 font-bold text-brand-dark outline-none cursor-pointer hover:bg-gray-200 transition"
+              className="shrink-0 bg-gray-50 border-l-2 border-gray-200 p-2 font-bold text-brand-dark outline-none cursor-pointer hover:bg-gray-200 transition"
               data-testid="to-select"
             >
                {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}

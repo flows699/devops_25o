@@ -25,6 +25,12 @@ function App() {
         return;
     }
 
+    if (fromCurrency === toCurrency) {
+        setResult(numericAmount);
+        setError("");
+        return;
+    }
+
     setLoading(true);
     setError("");
 
